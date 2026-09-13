@@ -6,16 +6,18 @@
     <linearGradient id="cover" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFB067"/><stop offset=".38" stop-color="#F84F82"/><stop offset=".72" stop-color="#733CEB"/><stop offset="1" stop-color="#153078"/></linearGradient>
     <linearGradient id="player" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#493C8C"/><stop offset=".48" stop-color="#6E296E"/><stop offset="1" stop-color="#172A60"/></linearGradient>
     <radialGradient id="glow"><stop stop-color="#8A47FF" stop-opacity=".38"/><stop offset="1" stop-color="#8A47FF" stop-opacity="0"/></radialGradient>
-    <filter id="shadow" x="-40%" y="-100%" width="180%" height="300%"><feDropShadow dx="0" dy="18" stdDeviation="22" flood-opacity=".55"/></filter>
   </defs>
   <rect width="1500" height="480" rx="28" fill="url(#bg)"/>
   <circle cx="750" cy="400" r="330" fill="url(#glow)"/>
   <text x="210" y="88" text-anchor="middle" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16" font-weight="650" letter-spacing="2" opacity=".58">COMPACT</text>
   <text x="750" y="88" text-anchor="middle" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16" font-weight="650" letter-spacing="2" opacity=".58">PLAYING</text>
   <text x="1250" y="88" text-anchor="middle" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16" font-weight="650" letter-spacing="2" opacity=".58">HOVER</text>
-  <g filter="url(#shadow)"><rect x="150" y="190" width="120" height="42" rx="21" fill="#10121A" stroke="#FFF" stroke-opacity=".16"/><rect x="161" y="199" width="24" height="24" rx="7" fill="url(#cover)"/><rect x="224" y="205" width="3" height="12" rx="1.5" fill="#FFF" opacity=".65"/><rect x="232" y="200" width="3" height="17" rx="1.5" fill="#FFF" opacity=".9"/><rect x="240" y="207" width="3" height="10" rx="1.5" fill="#FFF" opacity=".72"/></g>
-  <g filter="url(#shadow)"><rect x="635" y="190" width="230" height="42" rx="21" fill="#10121A" stroke="#FFF" stroke-opacity=".16"/><rect x="646" y="199" width="24" height="24" rx="7" fill="url(#cover)"/><text x="682" y="217" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="14" font-weight="650">Midnight Drive</text><rect x="821" y="205" width="3" height="12" rx="1.5" fill="#FFF" opacity=".65"/><rect x="829" y="200" width="3" height="17" rx="1.5" fill="#FFF" opacity=".9"/><rect x="837" y="207" width="3" height="10" rx="1.5" fill="#FFF" opacity=".72"/></g>
-  <g filter="url(#shadow)">
+  <rect x="156" y="198" width="108" height="39" rx="20" fill="#000" opacity=".28"/>
+  <g><rect x="150" y="190" width="120" height="42" rx="21" fill="#10121A" stroke="#FFF" stroke-opacity=".22"/><rect x="161" y="199" width="24" height="24" rx="7" fill="url(#cover)"/><rect x="224" y="205" width="3" height="12" rx="1.5" fill="#FFF" opacity=".72"/><rect x="232" y="200" width="3" height="17" rx="1.5" fill="#FFF"/><rect x="240" y="207" width="3" height="10" rx="1.5" fill="#FFF" opacity=".8"/></g>
+  <rect x="642" y="198" width="216" height="39" rx="20" fill="#000" opacity=".28"/>
+  <g><rect x="635" y="190" width="230" height="42" rx="21" fill="#10121A" stroke="#FFF" stroke-opacity=".22"/><rect x="646" y="199" width="24" height="24" rx="7" fill="url(#cover)"/><text x="682" y="217" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="14" font-weight="700">Midnight Drive</text><rect x="821" y="205" width="3" height="12" rx="1.5" fill="#FFF" opacity=".72"/><rect x="829" y="200" width="3" height="17" rx="1.5" fill="#FFF"/><rect x="837" y="207" width="3" height="10" rx="1.5" fill="#FFF" opacity=".8"/></g>
+  <rect x="1038" y="157" width="394" height="118" rx="27" fill="#000" opacity=".3"/>
+  <g>
     <rect x="1025" y="145" width="420" height="120" rx="27" fill="url(#player)" stroke="#FFF" stroke-opacity=".23"/>
     <rect x="1042" y="162" width="86" height="86" rx="20" fill="url(#cover)" stroke="#FFF" stroke-opacity=".2"/>
     <text x="1146" y="184" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="17" font-weight="700">Midnight Drive</text>
