@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Nowlume for macOS</title>
+  <desc id="desc">A product illustration showing Nowlume's menu bar item and playing above a colorful floating music player.</desc>
+  <defs>
+    <linearGradient id="bg" x0="0" x1="0" x2="1" y2="1"><stop stop-color="#080A12"/><stop offset=".48" stop-color="#11162B"/><stop offset="1" stop-color="#090A13"/></linearGradient>
+    <radialGradient id="violet"><stop stop-color="#8047FF" stop-opacity=".72"/><stop offset="1" stop-color="#8047FF" stop-opacity="0"/></radialGradient>
+    <radialGradient id="coral"><stop stop-color="#FF665E" stop-opacity=".62"/><stop offset="1" stop-color="#FF665E" stop-opacity="0"/></radialGradient>
+    <radialGradient id="blue"><stop stop-color="#1677FF" stop-opacity=".66"/><stop offset="1" stop-color="#1677FF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#413A85"/><stop offset=".42" stop-color="#6A266E"/><stop offset="1" stop-color="#14295E"/></linearGradient>
+    <linearGradient id="cover" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFB36B"/><stop offset=".38" stop-color="#F95383"/><stop offset=".72" stop-color="#7138E8"/><stop offset="1" stop-color="#162C77"/></linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFF" stop-opacity=".34"/><stop offset=".3" stop-color="#FFF" stop-opacity=".03"/><stop offset="1" stop-color="#FFF" stop-opacity="0"/></linearGradient>
+    <filter id="blur70"><feGaussianBlur stdDeviation="70"/></filter>
+    <filter id="blur36"><feGaussianBlur stdDeviation="36"/></filter>
+    <filter id="shadow" x="-40%" y="-50%" width="180%" height="220%"><feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#000" flood-opacity=".55"/></filter>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity=".45"/></filter>
+    <clipPath id="screenClip"><rect x="130" y="92" width="1340" height="716" rx="34"/></clipPath>
+    <clipPath id="panelClip"><rect x="848" y="306" width="500" height="142" rx="30"/></clipPath>
+    <clipPath id="coverClip"><rect x="868" y="326" width="102" height="102" rx="23"/></clipPath>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="260" cy="160" r="300" fill="url(#blue)" filter="url(#blur70)"/>
+  <circle cx="1420" cy="170" r="330" fill="url(#coral)" filter="url(#blur70)"/>
+  <circle cx="1080" cy="830" r="390" fill="url(#violet)" filter="url(#blur70)"/>
+  <rect x="130" y="92" width="1340" height="716" rx="34" fill="#151724" stroke="#FFF" stroke-opacity=".13" filter="url(#shadow)"/>
+  <g clip-path="url(#screenClip)">
+    <rect x="130" y="92" width="1340" height="716" fill="#11131D"/>
+    <circle cx="1220" cy="360" r="310" fill="url(#violet)" opacity=".25" filter="url(#blur70)"/>
+    <circle cx="1020" cy="720" r="270" fill="url(#blue)" opacity=".19" filter="url(#blur70)"/>
+    <path d="M130 137H1470" stroke="#FFF" stroke-opacity=".11"/>
+    <circle cx="165" cy="115" r="7" fill="#FF5F57"/><circle cx="188" cy="115" r="7" fill="#FEBC2E"/><circle cx="211" cy="115" r="7" fill="#28C840"/>
+    <text x="220" y="292" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="72" font-weight="700" letter-spacing="-2">Your music.</text>
+    <text x="220" y="374" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="72" font-weight="700" letter-spacing="-2">Always in reach.</text>
+    <text x="224" y="430" fill="#C9CDDA" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="23">A tiny, native Now Playing companion</text>
+    <text x="224" y="463" fill="#C9CDDA" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="23">that follows the color of every track.</text>
+    <rect x="220" y="520" width="144" height="42" rx="21" fill="#FFF" fill-opacity=".1" stroke="#FFF" stroke-opacity=".14"/>
+    <circle cx="244" cy="541" r="6" fill="#5FE39B"/><text x="260" y="548" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="17" font-weight="600">Local only</text>
+    <rect x="376" y="520" width="150" height="42" rx="21" fill="#FFF" fill-opacity=".1" stroke="#FFF" stroke-opacity=".14"/>
+    <text x="399" y="548" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="17" font-weight="600">Native SwiftUI</text>
+    <rect x="1074" y="166" width="224" height="40" rx="20" fill="#0D101B" fill-opacity=".9" stroke="#FFF" stroke-opacity=".18" filter="url(#softShadow)"/>
+    <rect x="1083" y="175" width="22" height="22" rx="6" fill="url(#cover)"/>
+    <text x="1118" y="192" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="14" font-weight="650">Midnight Drive</text>
+    <rect x="1260" y="183" width="3" height="8" rx="1.5" fill="#FFF" opacity=".7"/><rect x="1267" y="177" width="3" height="14" rx="1.5" fill="#FFF" opacity=".9"/><rect x="1274" y="181" width="3" height="10" rx="1.5" fill="#FFF" opacity=".78"/>
+    <g filter="url(#shadow)">
+      <rect x="848" y="306" width="500" height="142" rx="30" fill="url(#panel)"/>
+      <g clip-path="url(#panelClip)"><circle cx="910" cy="458" r="168" fill="url(#coral)" opacity=".62" filter="url(#blur36)"/><circle cx="1290" cy="284" r="190" fill="url(#blue)" opacity=".63" filter="url(#blur36)"/><circle cx="1160" cy="470" r="160" fill="url(#violet)" opacity=".52" filter="url(#blur36)"/><rect x="848" y="306" width="500" height="142" fill="url(#shine)"/></g>
+      <rect x="848.5" y="306.5" width="499" height="141" rx="29.5" fill="none" stroke="#FFF" stroke-opacity=".25"/>
+    </g>
+    <g clip-path="url(#coverClip)"><rect x="868" y="326" width="102" height="102" fill="url(#cover)"/><circle cx="935" cy="350" r="58" fill="url(#coral)"/><circle cx="889" cy="416" r="62" fill="url(#blue)"/><path d="M869 403C901 377 929 379 970 345V428H868Z" fill="#100F35" opacity=".45"/></g>
+    <rect x="868.5" y="326.5" width="101" height="101" rx="22.5" fill="none" stroke="#FFF" stroke-opacity=".24"/>
+    <text x="992" y="348" fill="#FFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="19" font-weight="700">Midnight Drive</text>
+    <text x="992" y="372" fill="#FFF" fill-opacity=".68" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="14" font-weight="500">Nowlume Radio</text>
+    <path d="M1185 348L1197 340V356Z" fill="#FFF" opacity=".8"/>
+    <circle cx="1230" cy="348" r="22" fill="#FFF" fill-opacity=".18" stroke="#FFF" stroke-opacity=".16"/><path d="M1225 338L1240 348L1225 358Z" fill="#FFF"/>
+    <path d="M1264 340L1276 348L1264 356Z" fill="#FFF" opacity=".8"/><path d="M1278 340V356" stroke="#FFF" stroke-width="2" opacity=".8"/>
+    <rect x="992" y="401" width="324" height="4" rx="2" fill="#FFF" fill-opacity=".17"/><rect x="992" y="401" width="196" height="4" rx="2" fill="#FFF" fill-opacity=".92"/><circle cx="1188" cy="403" r="5" fill="#FFF"/>
+    <text x="992" y="425" fill="#FFF" fill-opacity=".56" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11">2:41</text><text x="1292" y="425" fill="#FFF" fill-opacity=".56" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11">4:12</text>
+  </g>
+  <text x="800" y="856" text-anchor="middle" fill="#FFF" fill-opacity=".5" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="17" letter-spacing="3">NOW PLAYING, BEAUTIFULLY</text>
+</svg>
