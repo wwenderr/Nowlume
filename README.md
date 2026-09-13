@@ -18,7 +18,7 @@ It works with Yandex Music and other macOS players that publish playback metadat
 
 ## At a glance
 
-![Nowlume menu bar and expanded player states](docs/nowlume-states.svg)
+![Nowlume menu bar and expanded player states](docs/nowlume-states-sharp.svg)
 
 | | |
 |---|---|
