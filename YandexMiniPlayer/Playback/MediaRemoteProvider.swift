@@ -5,6 +5,21 @@ import OSLog
 final class MediaRemoteProvider: NowPlayingProvider, @unchecked Sendable {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "YandexMiniPlayer", category: "MediaRemote")
 
+    // Reuse the decoded image while polling the same artwork.
+    private var cachedArtworkData: Data?
+    private var cachedArtwork: NSImage?
+    private let artworkLock = NSLock()
+
+    private func artwork(for data: Data?) -> NSImage? {
+        artworkLock.lock()
+        defer { artworkLock.unlock() }
+        if data != cachedArtworkData {
+            cachedArtworkData = data
+            cachedArtwork = data.flatMap(NSImage.init(data:))
+        }
+        return cachedArtwork
+    }
+
     func getCurrentTrack() async -> Track? {
         let info: [String: Any]?
         if #available(macOS 15.4, *) {
@@ -34,7 +49,7 @@ final class MediaRemoteProvider: NowPlayingProvider, @unchecked Sendable {
         let elapsed = Self.number(info["elapsedTime"])
         let rate = Self.number(info["playbackRate"])
         let artworkData = info["artworkData"] as? Data
-        let artwork = artworkData.flatMap(NSImage.init(data:))
+        let artwork = artwork(for: artworkData)
         let identifier = (info["identifier"] as? String) ?? "\(title)|\(artist ?? "")|\(album ?? "")"
 
         return Track(

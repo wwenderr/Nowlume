@@ -6,6 +6,7 @@ import SwiftUI
 final class PlayerViewModel: ObservableObject {
     static let shared = PlayerViewModel(provider: MediaRemoteProvider())
 
+    @Published var isPlayerVisible = false
     @Published private(set) var track: Track?
     @Published private(set) var palette = DominantColorService.fallback
     @Published private(set) var transitionID = UUID()

@@ -30,7 +30,7 @@ struct ArtworkView: View {
         .shadow(color: .black.opacity(0.34), radius: 8, y: 3)
         .scaleEffect(isHovering ? 1.025 : (isPlaying && !reduceAnimations ? 1.01 : 1))
         .animation(reduceAnimations ? nil : .easeInOut(duration: 0.22), value: isHovering)
-        .animation(reduceAnimations ? nil : .easeInOut(duration: 2.8).repeatForever(autoreverses: true), value: isPlaying)
+        .animation(reduceAnimations ? nil : .easeInOut(duration: 0.22), value: isPlaying)
         .onHover { isHovering = $0 }
     }
 }

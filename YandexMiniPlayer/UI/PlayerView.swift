@@ -79,6 +79,7 @@ struct PlayerView: View {
                 palette: viewModel.palette,
                 artwork: viewModel.track?.artwork,
                 isPlaying: viewModel.track?.isPlaying == true,
+                isVisible: viewModel.isPlayerVisible,
                 reduceAnimations: preferences.reduceAnimations
             )
 
@@ -129,7 +130,7 @@ struct PlayerView: View {
                 .id(viewModel.transitionID)
                 .transition(.opacity.combined(with: .offset(y: 4)))
 
-                TimelineView(.periodic(from: .now, by: 0.5)) { context in
+                TimelineView(.animation(minimumInterval: 0.5, paused: !viewModel.isPlayerVisible || !track.isPlaying)) { context in
                     TrackProgressView(elapsed: viewModel.displayedElapsed(at: context.date), duration: track.duration)
                 }
             }

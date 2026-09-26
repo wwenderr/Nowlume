@@ -1,19 +1,21 @@
-import Combine
 import SwiftUI
 
 struct AnimatedBackground: View {
-    let palette: [PaletteColor]
     let artwork: NSImage?
     let isPlaying: Bool
+    let isVisible: Bool
     let reduceAnimations: Bool
-    @State private var animationDate = Date()
+    @State private var restingDate = Date()
+    private let colors: [Color]
 
-    private let animationTimer = Timer.publish(every: 1.0 / 30.0, on: .main, in: .common).autoconnect()
-
-    private var colors: [Color] {
+    init(palette: [PaletteColor], artwork: NSImage?, isPlaying: Bool, isVisible: Bool, reduceAnimations: Bool) {
+        self.artwork = artwork
+        self.isPlaying = isPlaying
+        self.isVisible = isVisible
+        self.reduceAnimations = reduceAnimations
         let source = palette.isEmpty ? DominantColorService.fallback : palette
         let shifts = [0.0, 0.08, -0.06, 0.48, 0.56]
-        return source.enumerated().map { index, value in
+        colors = source.enumerated().map { index, value in
             value.vividColor(hueShift: shifts[index % shifts.count])
         }
     }
@@ -31,8 +33,9 @@ struct AnimatedBackground: View {
                     .scaleEffect(1.35)
             }
 
-            GeometryReader { proxy in
-                    let cycle = animationDate.timeIntervalSinceReferenceDate
+            TimelineView(.animation(minimumInterval: 1.0 / 20.0, paused: !animates)) { context in
+                GeometryReader { proxy in
+                    let cycle = (animates ? context.date : restingDate).timeIntervalSinceReferenceDate
                         .truncatingRemainder(dividingBy: 8.0) / 8.0
                     let phase = cycle * 2.0 * Double.pi
                     ZStack {
@@ -80,14 +83,13 @@ struct AnimatedBackground: View {
                             .offset(x: proxy.size.width * 0.62 * sin(phase))
                             .blur(radius: 20)
                     }
+                    .drawingGroup()
                     .hueRotation(.degrees(sin(phase) * 4))
                     .saturation(1.25)
                     .contrast(1.08)
+                }
             }
             .opacity(0.96)
-            .onReceive(animationTimer) { date in
-                animationDate = date
-            }
 
             LinearGradient(
                 colors: [Color.black.opacity(0.03), Color.black.opacity(0.27)],
@@ -98,6 +100,8 @@ struct AnimatedBackground: View {
         }
         .clipped()
     }
+
+    private var animates: Bool { isVisible && isPlaying && !reduceAnimations }
 
     private func color(_ index: Int) -> Color {
         colors[index % colors.count]

@@ -113,10 +113,10 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
 
     private var statusItem: NSStatusItem?
     private var statusItemHoverMonitor: StatusItemHoverMonitor?
-    private var globalMouseMonitor: Any?
-    private var localMouseMonitor: Any?
     private var statusHoverTimer: Timer?
     private var trackObservation: AnyCancellable?
+    private var animationPreferenceObservation: AnyCancellable?
+    private var statusArtwork: NSImage?
     private var fitCheckWorkItem: DispatchWorkItem?
     private var isStatusItemExpanded = true
     private var statusGlassView: NSView?
@@ -134,7 +134,11 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
     private var collapseWorkItem: DispatchWorkItem?
     private var playbackHideWorkItem: DispatchWorkItem?
     private var statusItemHovered = false
+    private var statusTrackingHovered = false
+    private var statusPointerHovered = false
     private var playerHovered = false
+    private var panelTransitionID = 0
+    private var revealUntil = Date.distantPast
 
     func configure() {
         guard statusItem == nil else { return }
@@ -201,39 +205,44 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
                 self?.updatePlaybackVisibility(for: track)
             }
         updateStatusItem(for: PlayerViewModel.shared.track)
-        installMouseMonitoring()
+        animationPreferenceObservation = Preferences.shared.$reduceAnimations
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.marqueeAnimationSignature = ""
+                self?.updateStatusMarquee()
+                self?.updateEqualizer()
+            }
+        updateStatusActivity()
         scheduleFitCheck()
     }
 
-    private func installMouseMonitoring() {
-        globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { [weak self] _ in
-            Task { @MainActor in self?.updateStatusHoverFromPointer() }
+    private func updateStatusActivity() {
+        let visible = statusItem?.isVisible == true
+        if visible && statusHoverTimer == nil {
+            // Native tracking handles normal hover. Poll only as a fallback for
+            // events consumed by the status bar; animation needs no CPU timer.
+            let timer = Timer(timeInterval: 0.2, target: self,
+                              selector: #selector(pollStatusItemHover),
+                              userInfo: nil, repeats: true)
+            timer.tolerance = 0.05
+            RunLoop.main.add(timer, forMode: .common)
+            statusHoverTimer = timer
+        } else if !visible {
+            statusHoverTimer?.invalidate()
+            statusHoverTimer = nil
         }
-        localMouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved]) { [weak self] event in
-            self?.updateStatusHoverFromPointer()
-            return event
-        }
-
-        // Status-bar buttons occasionally consume mouse-moved events themselves.
-        // A lightweight poll keeps hover reliable without needing Accessibility.
-        let timer = Timer(
-            timeInterval: 0.08,
-            target: self,
-            selector: #selector(pollStatusItemHover),
-            userInfo: nil,
-            repeats: true
-        )
-        RunLoop.main.add(timer, forMode: .common)
-        statusHoverTimer = timer
+        updateEqualizer()
+        updateStatusMarquee()
     }
 
     @objc private func pollStatusItemHover() {
         updateStatusHoverFromPointer()
-        updateEqualizer()
-        updateStatusMarquee()
-
+        if (statusItemHovered || playerHovered || Date() < revealUntil),
+           playerPanel?.isVisible != true {
+            showPlayer(animated: true)
+        }
         let now = Date()
-        if now.timeIntervalSince(lastFitEvaluation) >= 0.35 {
+        if now.timeIntervalSince(lastFitEvaluation) >= 0.75 {
             lastFitEvaluation = now
             updateAdaptiveStatusWidth()
         }
@@ -243,33 +252,34 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
         guard let button = statusItem?.button,
               let window = button.window,
               window.isVisible else {
-            if statusItemHovered { setStatusItemHovered(false) }
+            setStatusPointerHovered(false)
             return
         }
 
         let buttonFrame = window.convertToScreen(button.convert(button.bounds, to: nil))
-        let hovering = buttonFrame.insetBy(dx: -2, dy: -2).contains(NSEvent.mouseLocation)
-        if hovering != statusItemHovered {
-            setStatusItemHovered(hovering)
-        }
+        let onScreen = NSScreen.screens.contains { $0.frame.intersects(buttonFrame) }
+        setStatusPointerHovered(onScreen && buttonFrame.insetBy(dx: -2, dy: -2).contains(NSEvent.mouseLocation))
     }
 
     private func updateStatusItem(for track: Track?) {
         guard statusItem?.button != nil else { return }
 
-        if let artwork = track?.artwork {
-            var proposedRect = NSRect(x: 0, y: 0, width: 24, height: 24)
-            statusArtworkLayer?.contents = artwork.cgImage(
-                forProposedRect: &proposedRect,
-                context: nil,
-                hints: [.interpolation: NSImageInterpolation.high]
-            )
-            statusArtworkLayer?.backgroundColor = NSColor.clear.cgColor
-            statusFallbackIconLayer?.isHidden = true
-        } else {
-            statusArtworkLayer?.contents = nil
-            statusArtworkLayer?.backgroundColor = NSColor.white.withAlphaComponent(0.08).cgColor
-            statusFallbackIconLayer?.isHidden = false
+        if track?.artwork !== statusArtwork {
+            statusArtwork = track?.artwork
+            if let artwork = track?.artwork {
+                var proposedRect = NSRect(x: 0, y: 0, width: 24, height: 24)
+                statusArtworkLayer?.contents = artwork.cgImage(
+                    forProposedRect: &proposedRect,
+                    context: nil,
+                    hints: [.interpolation: NSImageInterpolation.high]
+                )
+                statusArtworkLayer?.backgroundColor = NSColor.clear.cgColor
+                statusFallbackIconLayer?.isHidden = true
+            } else {
+                statusArtworkLayer?.contents = nil
+                statusArtworkLayer?.backgroundColor = NSColor.white.withAlphaComponent(0.08).cgColor
+                statusFallbackIconLayer?.isHidden = false
+            }
         }
         statusArtworkLayer?.contentsGravity = .resizeAspectFill
 
@@ -277,16 +287,16 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
         if title != statusTitleText {
             statusTitleText = title
             marqueeAnimationSignature = ""
+            let attributedTitle = NSAttributedString(
+                string: title,
+                attributes: [
+                    .font: NSFont.systemFont(ofSize: 11.5, weight: .semibold),
+                    .foregroundColor: NSColor.white
+                ]
+            )
+            statusTitleTextWidth = ceil(attributedTitle.size().width) + 2
+            statusTitleLayer?.string = attributedTitle
         }
-        let attributedTitle = NSAttributedString(
-            string: title,
-            attributes: [
-                .font: NSFont.systemFont(ofSize: 11.5, weight: .semibold),
-                .foregroundColor: NSColor.white
-            ]
-        )
-        statusTitleTextWidth = ceil(attributedTitle.size().width) + 2
-        statusTitleLayer?.string = attributedTitle
         updateStatusContentLayout()
         updateStatusMarquee()
         updateEqualizer()
@@ -409,7 +419,9 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
     private func updateStatusMarquee() {
         guard let clipLayer = statusTitleClipLayer,
               let titleLayer = statusTitleLayer,
-              isStatusItemExpanded else {
+              isStatusItemExpanded,
+              statusItem?.isVisible == true,
+              !Preferences.shared.reduceAnimations else {
             statusTitleLayer?.removeAnimation(forKey: "smoothMarquee")
             marqueeAnimationSignature = ""
             return
@@ -447,24 +459,29 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
     private func updateEqualizer() {
         guard let button = statusItem?.button, equalizerBars.count == 3 else { return }
         let isPlaying = PlayerViewModel.shared.track?.isPlaying == true
-        let phase = Date.timeIntervalSinceReferenceDate * 5.2
-        let heights = equalizerBars.indices.map { index -> CGFloat in
-            guard isPlaying else { return 4 }
-            return 4 + CGFloat(abs(sin(phase + Double(index) * 1.65))) * 7
-        }
+        let animates = isPlaying && statusItem?.isVisible == true && !Preferences.shared.reduceAnimations
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         let startX = button.bounds.maxX - 15
         for (index, bar) in equalizerBars.enumerated() {
-            let height = heights[index]
-            bar.frame = NSRect(
-                x: startX + CGFloat(index) * 4,
-                y: button.bounds.midY - height / 2,
-                width: 2,
-                height: height
-            )
+            bar.frame = NSRect(x: startX + CGFloat(index) * 4,
+                               y: button.bounds.midY - 5.5, width: 2, height: 11)
             bar.opacity = isPlaying ? 0.92 : 0.42
+            bar.transform = CATransform3DMakeScale(1, 4.0 / 11.0, 1)
+            if animates {
+                guard bar.animation(forKey: "equalizer") == nil else { continue }
+                let animation = CAKeyframeAnimation(keyPath: "transform.scale.y")
+                animation.values = [4.0 / 11.0, 1.0, 6.0 / 11.0, 9.0 / 11.0, 4.0 / 11.0]
+                animation.keyTimes = [0, 0.25, 0.5, 0.75, 1]
+                animation.duration = 0.8 + Double(index) * 0.17
+                animation.timeOffset = Double(index) * 0.23
+                animation.calculationMode = .cubic
+                animation.repeatCount = .infinity
+                bar.add(animation, forKey: "equalizer")
+            } else {
+                bar.removeAnimation(forKey: "equalizer")
+            }
         }
         CATransaction.commit()
     }
@@ -546,8 +563,8 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
         panel.level = .popUpMenu
         panel.collectionBehavior = [
             .canJoinAllSpaces,
+            .canJoinAllApplications,
             .fullScreenAuxiliary,
-            .stationary,
             .ignoresCycle
         ]
         panel.delegate = self
@@ -562,6 +579,7 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
 
     func reveal() {
         show()
+        revealUntil = Date().addingTimeInterval(2.2)
         showPlayer(animated: true)
         scheduleCollapse(after: 2.2)
     }
@@ -570,6 +588,7 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
         collapseWorkItem?.cancel()
         playbackHideWorkItem?.cancel()
         statusItem?.isVisible = false
+        updateStatusActivity()
         hidePlayer(animated: false)
     }
 
@@ -584,6 +603,7 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
         if track?.isPlaying == true {
             guard statusItem?.isVisible != true else { return }
             statusItem?.isVisible = true
+            updateStatusActivity()
             DispatchQueue.main.async { [weak self] in
                 self?.updateStatusContentLayout()
                 self?.statusItemHoverMonitor?.installTrackingArea()
@@ -595,8 +615,11 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
         let hideStoppedPlayback = { [weak self] in
             guard let self, PlayerViewModel.shared.track?.isPlaying != true else { return }
             self.statusItemHovered = false
+            self.statusTrackingHovered = false
+            self.statusPointerHovered = false
             self.playerHovered = false
             self.statusItem?.isVisible = false
+            self.updateStatusActivity()
             self.hidePlayer(animated: true)
         }
 
@@ -610,6 +633,18 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
     }
 
     private func setStatusItemHovered(_ hovering: Bool) {
+        statusTrackingHovered = hovering
+        updateCombinedStatusHover()
+    }
+
+    private func setStatusPointerHovered(_ hovering: Bool) {
+        statusPointerHovered = hovering
+        updateCombinedStatusHover()
+    }
+
+    private func updateCombinedStatusHover() {
+        let hovering = statusTrackingHovered || statusPointerHovered
+        guard hovering != statusItemHovered else { return }
         statusItemHovered = hovering
         hoverStateDidChange()
     }
@@ -640,8 +675,19 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
 
     private func showPlayer(animated: Bool) {
         guard let playerPanel,
-              !playerPanel.isVisible,
+              statusItem?.isVisible == true,
               let finalFrame = playerFrame() else { return }
+
+        panelTransitionID += 1
+        PlayerViewModel.shared.isPlayerVisible = true
+
+        if playerPanel.isVisible {
+            // A visible panel may still belong to the previous fullscreen Space.
+            playerPanel.setFrame(finalFrame, display: true)
+            playerPanel.orderFrontRegardless()
+            playerPanel.alphaValue = 1
+            return
+        }
 
         guard animated else {
             playerPanel.alphaValue = 1
@@ -665,6 +711,10 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
     }
 
     private func hidePlayer(animated: Bool) {
+        revealUntil = .distantPast
+        panelTransitionID += 1
+        let transitionID = panelTransitionID
+        PlayerViewModel.shared.isPlayerVisible = false
         guard let playerPanel, playerPanel.isVisible else { return }
         guard animated else {
             playerPanel.alphaValue = 0
@@ -676,24 +726,30 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
             context.duration = 0.18
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
             playerPanel.animator().alphaValue = 0
-        } completionHandler: {
-            playerPanel.orderOut(nil)
+        } completionHandler: { [weak self, weak playerPanel] in
+            DispatchQueue.main.async {
+                guard let self, self.panelTransitionID == transitionID else { return }
+                playerPanel?.orderOut(nil)
+            }
         }
     }
 
     private func playerFrame() -> NSRect? {
         guard let button = statusItem?.button,
               let window = button.window,
-              let screen = window.screen else { return nil }
+              window.isVisible else { return nil }
 
         let buttonFrame = window.convertToScreen(button.convert(button.bounds, to: nil))
+        guard let screen = NSScreen.screens.first(where: { $0.frame.intersects(buttonFrame) }) else {
+            return nil
+        }
         let x = min(
             max(screen.frame.minX + 10, buttonFrame.maxX - playerSize.width),
             screen.frame.maxX - playerSize.width - 10
         )
         return NSRect(
             x: x,
-            y: screen.visibleFrame.maxY - playerGap - playerSize.height,
+            y: buttonFrame.minY - playerGap - playerSize.height,
             width: playerSize.width,
             height: playerSize.height
         )
@@ -712,8 +768,15 @@ final class PlayerWindowController: NSObject, NSWindowDelegate {
 
     @objc private func activeSpaceDidChange() {
         statusItemHovered = false
+        statusTrackingHovered = false
+        statusPointerHovered = false
         playerHovered = false
         hidePlayer(animated: false)
+        // The status item's window can move after the Space notification arrives.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.statusItemHoverMonitor?.installTrackingArea()
+            self?.updateStatusHoverFromPointer()
+        }
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
